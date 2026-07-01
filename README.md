@@ -1,88 +1,92 @@
 # Amazon GEO Engine
 
-**让 Rufus 推荐你，而不只是找到你。**
+**Get recommended by Rufus & Alexa. Not just found.**
 
-Amazon GEO Engine 是一个针对亚马逊 **COSMO 算法（Rufus AI 推荐系统）** 的 Listing 语义优化工具。它分析你的商品标题和五点描述在 Rufus AI 眼中的"语义健康度"，给出五维评分、行动清单和优化后的文案。
-
----
-
-## 🔒 隐私承诺
-
-**本插件仅抓取亚马逊商品页的公开文本信息（标题、五点描述）。仅将此文本发送至分析引擎 API 以生成优化建议。我们不收集、不存储、不上传您的任何账户信息、销售数据或浏览历史。**
+Amazon GEO Engine is a Chrome extension that analyzes your Amazon listing's "semantic health" through the lens of the **COSMO algorithm** — the AI that powers Rufus and Alexa product recommendations. It scores your title and bullet points across five dimensions, then gives you a concrete checklist and rewritten copy you can paste straight into Seller Central.
 
 ---
 
-## 🎯 功能
+## 🔒 Privacy
 
-| 功能 | 说明 |
+**This extension only scrapes publicly visible listing text (title, bullet points). Only this text is sent to the analysis engine API. We never collect, store, or upload any account data, sales data, or browsing history.**
+
+---
+
+## 🎯 Features
+
+| Feature | Description |
 |---|---|
-| **一键诊断** | 在任意亚马逊商品页点击插件，自动抓取标题、五点描述、ASIN |
-| **五维 GEO 评分** | 场景覆盖 · 人群精准 · 材质权威 · 证据密度 · 情感利益，各 0-25 分 |
-| **行动清单** | 4+ 条极其具体的优化指令，逐条告诉你改什么 |
-| **定量优化理由** | 每个维度的分数差距、缺失的信号数、预估吸收率提升 |
-| **五点重写** | 直接输出 5 条带数据支撑的 bullet points，一键复制粘贴到 Seller Central |
-| **Rufus FAQ** | 3 组语音搜索优化的 Q&A |
-| **一键跳转** | 直连 Seller Central 库存管理页 |
-| **历史记录** | 自动保存分析历史，关闭 popup 不丢失 |
+| **One-Click Diagnosis** | Open the extension on any Amazon product page — auto-scrapes title, bullets, ASIN |
+| **5-Dimension GEO Score** | Scenario · Audience · Material · Evidence · Emotion — each scored /25 |
+| **Actionable Checklist** | 4+ specific action items telling you exactly what to change and why |
+| **Quantitative Reasoning** | Per-dimension score gaps, missing signal counts, estimated absorption rate uplift |
+| **Bullet Rewrites** | 5 optimized bullet points with data-backed claims — one-click copy to clipboard |
+| **Item Highlights** | Auto-generated 125-char highlights field (Amazon's July 27, 2026 mandate) |
+| **Alexa Voice FAQ** | 3 Q&A pairs optimized for voice-search queries |
+| **Seller Central Jump** | One click from diagnosis to the inventory edit page — 17 marketplaces supported |
+| **History** | Auto-saves analysis history; survives popup close |
 
 ---
 
-## 🚀 安装（30 秒）
+## 🚀 Install (30 seconds)
 
-### 从 Chrome Web Store 安装（推荐）
+### From Chrome Web Store (Recommended)
 
-> *审核中，即将上线*
+> *Under review — coming soon*
 
-### 手动加载
+### Manual Load
 
-1. 下载此仓库：`git clone https://github.com/onlyJin/amazona_geo.git`
-2. 打开 `chrome://extensions/` → 开启"开发者模式"
-3. 点击"加载已解压的扩展程序" → 选择 `extension/` 目录
-4. 打开任意亚马逊商品详情页，点击插件图标即可使用
+1. Clone the repo:
+   ```
+   git clone https://github.com/onlyJin/amazona_geo.git
+   ```
+2. Open `chrome://extensions/` → enable **Developer mode**
+3. Click **Load unpacked** → select the `extension/` folder
+4. Open any Amazon product detail page, click the extension icon
 
 ---
 
-## 💰 定价
+## 💰 Pricing
 
-| 套餐 | 价格 | 分析次数 |
+| Plan | Price | Analyses |
 |---|---|---|
-| **免费试用** | $0 | 5 次/月 |
-| **Pro** | 即将上线 | 无限 |
+| **Free** | $0 | 5 / month |
+| **Pro** | Coming soon | Unlimited |
 
-免费额度无需信用卡、无需注册。分析引擎在云端运行，你在亚马逊商品页点击按钮即可自动调用。
+No credit card. No signup. The analysis engine runs in the cloud — you just click a button on any Amazon product page.
 
 ---
 
-## 📊 Benchmark 报告
+## 📊 Benchmark Report
 
-我们在 5 个热门品类中测试了 72 个真实亚马逊 Listing（47 个 Best Seller vs 25 个低排名商品）：
+We tested 72 real Amazon listings across 5 popular categories (47 Best Sellers vs. 25 low-ranked products):
 
-| 维度 | Best Seller | 对照组 | 差距 |
+| Dimension | Best Seller | Control | Gap |
 |---|---|---|---|
-| 场景覆盖 | 16.0 | 14.2 | +1.8 |
-| 人群精准 | 13.5 | 11.2 | +2.3 |
-| 材质权威 | 15.6 | 13.6 | +2.0 |
-| **证据密度** | **12.7** | **9.3** | **+3.4** |
-| 情感利益 | 15.6 | 17.2 | -1.6 |
-| **总分** | **73.1** | **65.4** | **+7.7** |
+| Scenario Coverage | 16.0 | 14.2 | +1.8 |
+| Audience Precision | 13.5 | 11.2 | +2.3 |
+| Material Authority | 15.6 | 13.6 | +2.0 |
+| **Evidence Density** | **12.7** | **9.3** | **+3.4** |
+| Emotional Benefit | 15.6 | 17.2 | −1.6 |
+| **Total Score** | **73.1** | **65.4** | **+7.7** |
 
-**核心发现：证据密度是 Best Seller 最大的分水岭。** 高排名商品用具体数据和认证说话，低排名商品堆情感词汇但缺少举证。
+**Key finding: Evidence Density is the #1 differentiator.** Top-ranked listings back claims with specific data and certifications. Lower-ranked listings pile on emotional language but skip the proof.
 
-[查看完整报告 →](promo/benchmark_report.html)
+[→ Full benchmark report](promo/benchmark_report.html)
 
 ---
 
-## 🛠️ 此仓库包含
+## 🛠️ What's in This Repo
 
-- Chrome Extension 前端（Manifest V3，开源）
-- Benchmark 数据与报告
-- Landing Page
+- **Chrome Extension** (Manifest V3, open source — MIT)
+- **Benchmark data & report**
+- **Landing page**
 
-分析引擎后端为闭源 SaaS。如需 API 接入或企业定制，联系 [your email]。
+The analysis engine backend is a closed-source SaaS. For API access or enterprise customization, contact [your email].
 
 ---
 
 ## 📄 License
 
-Chrome Extension — MIT License
-Analysis Engine — Proprietary
+- Chrome Extension — MIT License
+- Analysis Engine — Proprietary
