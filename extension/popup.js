@@ -18,6 +18,9 @@
       analyzeBtn: "一键 GEO 诊断",
       reloadBtn: "重新诊断",
       loading: "AI 正在分析 Listing",
+      loadingScrape: "正在抓取商品数据...",
+      loadingAnalyze: "AI 正在诊断...",
+      loadingRewrite: "正在生成优化建议...",
       scoreTitle: "GEO 语义评分",
       scoreSubtitle: "COSMO 算法适配度",
       checklistLabel: "✅ 执行清单 (Actionable Checklist)",
@@ -30,6 +33,8 @@
       noResult: "暂无数据。",
       cachePrefix: "上次分析 · ",
       retryBtn: "重试",
+      backendError: "分析引擎出错，请稍后重试。",
+      historyRestoreHint: "历史记录仅保留摘要。已选中 ASIN: {asin}，请点击"{btn}"重新分析。",
     },
     en: {
       headerSubtitle: "COSMO Algo · Rufus AI Optimizer",
@@ -37,6 +42,9 @@
       analyzeBtn: "Analyze Listing",
       reloadBtn: "Re-analyze",
       loading: "AI is analyzing your listing",
+      loadingScrape: "Scraping listing data...",
+      loadingAnalyze: "AI is diagnosing...",
+      loadingRewrite: "Generating recommendations...",
       scoreTitle: "GEO Score",
       scoreSubtitle: "COSMO Readiness",
       checklistLabel: "✅ Actionable Checklist",
@@ -49,6 +57,8 @@
       noResult: "No data available.",
       cachePrefix: "Last analysis · ",
       retryBtn: "Retry",
+      backendError: "Analysis engine error. Please try again later.",
+      historyRestoreHint: "Summary only. ASIN {asin} selected. Click \"{btn}\" to re-analyze.",
     },
   };
 
@@ -206,7 +216,7 @@
     }
   }
 
-  // ── 历史记录（多条）──
+  // ── 历史记录（多条，含完整结果）──
   async function saveToHistory(data) {
     try {
       console.log("[GEO] saveToHistory called, data:", JSON.stringify(data));
@@ -215,12 +225,23 @@
       console.log("[GEO] existing history length:", history.length);
       // 去重同 ASIN，只留最新
       history = history.filter((h) => h.asin !== data.asin);
-      // 塞到最前面
+      // 塞到最前面 — 存完整结果以便恢复
       history.unshift({
         asin: data.asin || "",
         title: data.title || "",
         score: data.score,
         savedAt: Date.now(),
+        // 存完整分析结果，用于恢复（不存 savedAt 两次）
+        fullResult: {
+          score: data.score,
+          dimension_scores: data.dimension_scores,
+          actionable_checklist: data.actionable_checklist,
+          structured_attributes: data.structured_attributes,
+          optimization_reason: data.optimization_reason,
+          rewritten_bullets: data.rewritten_bullets,
+          rewritten_faq: data.rewritten_faq,
+          item_highlights: data.item_highlights,
+        },
       });
       // 限长
       if (history.length > MAX_HISTORY) history = history.slice(0, MAX_HISTORY);
@@ -329,12 +350,14 @@
         : ago < 1440 ? `${Math.round(ago / 60)}h`
         : `${Math.round(ago / 1440)}d`;
 
+      const hasFull = !!(h.fullResult && h.fullResult.score !== undefined);
       const div = document.createElement("div");
       div.className = "history-item";
+      div.title = hasFull ? "Click to view full analysis" : "Summary only — click to re-analyze";
       div.innerHTML = `
         <span class="history-item-score ${scoreClass}">${score}</span>
         <div class="history-item-info">
-          <div class="history-item-title">${escapeHtml(h.title || h.asin || "—")}</div>
+          <div class="history-item-title">${escapeHtml(h.title || h.asin || "—")}${hasFull ? "" : " ⚡"}</div>
           <div class="history-item-asin">${h.asin || ""}</div>
         </div>
         <span class="history-item-time">${timeStr}</span>
@@ -354,25 +377,32 @@
   }
 
   /**
-   * 从历史记录恢复——仅恢复元数据，不重新渲染完整分析。
-   * 因为完整分析结果体量太大，不适合全存 history。
-   * 点击历史项 = 切换到该商品 + 提示用户重新分析。
+   * 从历史记录恢复——优先用存储的完整结果，否则提示重新分析。
    */
   async function restoreFromHistory(h) {
-    // 尝试从完整缓存恢复（如果恰好是最近一条）
-    const cached = await loadResult();
-    if (cached && cached.asin === h.asin && cached.score !== undefined) {
-      renderCached(cached);
+    // 如果历史条目里有完整结果，直接渲染
+    if (h.fullResult && h.fullResult.score !== undefined) {
+      renderCached(h.fullResult);
+      currentAsin = h.asin || "";
+      analyzeBtnText.textContent = t("reloadBtn");
       scoreCard.scrollIntoView({ behavior: "smooth" });
       return;
     }
-    // 否则提示
+    // 尝试从独立缓存恢复（兼容旧数据）
+    const cached = await loadResult();
+    if (cached && cached.asin === h.asin && cached.score !== undefined) {
+      renderCached(cached);
+      currentAsin = h.asin || "";
+      scoreCard.scrollIntoView({ behavior: "smooth" });
+      return;
+    }
+    // 实在没有，提示重新分析
     analyzeBtnText.textContent = t("reloadBtn");
     currentAsin = h.asin || "";
-    showError(
-      `历史记录仅保留摘要。已选中 ASIN: ${h.asin}，请点击"${t("reloadBtn")}"重新分析。`,
-      false
-    );
+    const msg = t("historyRestoreHint")
+      .replace("{asin}", h.asin || "")
+      .replace("{btn}", t("reloadBtn"));
+    showError(msg, false);
   }
 
   async function saveLocale(locale) {
@@ -405,12 +435,13 @@
     analyzeBtn.disabled = false;
   }
 
-  function showLoading() {
+  function showLoading(phase) {
     hide(errorEl);
     hide(retryBtn);
     hide(resultsEl);
     show(loadingEl);
-    loadingText.childNodes[0].textContent = t("loading");
+    const key = phase || "loading";
+    loadingText.childNodes[0].textContent = t(key);
     analyzeBtn.disabled = true;
     analyzeBtnText.textContent = "...";
   }
@@ -772,10 +803,11 @@
 
     isAnalyzing = true;
 
-    showLoading();
+    showLoading("loadingScrape");
 
     let apiResult;
     try {
+      showLoading("loadingAnalyze");
       const response = await fetch(BACKEND_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -787,6 +819,7 @@
         throw new Error(`HTTP ${response.status}: ${errorBody || "unknown"}`);
       }
 
+      showLoading("loadingRewrite");
       apiResult = await response.json();
     } catch (err) {
       if (err.name === "TypeError" && err.message.includes("fetch")) {
@@ -800,7 +833,18 @@
       return;
     }
 
-    if (!apiResult || apiResult.score === undefined) {
+    // 检查是否后端返回了错误（error: true 表示 API 调用失败，score 为 0 是假的）
+    if (!apiResult || apiResult.error) {
+      showError(
+        (apiResult && apiResult.optimization_reason)
+          ? apiResult.optimization_reason
+          : t("backendError"),
+        true
+      );
+      return;
+    }
+
+    if (apiResult.score === undefined) {
       showError("Backend returned unexpected data. Please try again.", true);
       return;
     }

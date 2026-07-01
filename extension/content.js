@@ -16,6 +16,66 @@
   "use strict";
 
   /**
+   * 检测页面语言，用于返回对应语言的错误消息。
+   * 亚马逊 .com / .co.uk / .ca → en，.de → de，.co.jp → ja，以此类推。
+   */
+  function detectPageLang() {
+    const htmlLang = document.documentElement.lang || "";
+    if (htmlLang.startsWith("ja")) return "ja";
+    if (htmlLang.startsWith("de")) return "de";
+    if (htmlLang.startsWith("zh")) return "zh";
+    if (htmlLang.startsWith("fr")) return "fr";
+    if (htmlLang.startsWith("es")) return "es";
+    if (htmlLang.startsWith("it")) return "it";
+    return "en"; // 默认英文
+  }
+
+  const pageLang = detectPageLang();
+
+  const MSG = {
+    notProductPage: {
+      en: "Not an Amazon product page",
+      zh: "当前页面不是亚马逊商品详情页",
+      ja: "Amazonの商品ページではありません",
+      de: "Keine Amazon-Produktseite",
+    },
+    notProductPageHint: {
+      en: "Please open this extension on a product detail page (URL contains /dp/ or /gp/product/). Current: ",
+      zh: "请在商品详情页（URL 包含 /dp/ 或 /gp/product/）打开此插件。当前页面: ",
+      ja: "商品詳細ページ（URLに/dp/または/gp/product/を含む）でこの拡張機能を開いてください。現在のページ: ",
+      de: "Bitte öffnen Sie diese Erweiterung auf einer Produktdetailseite (URL enthält /dp/ oder /gp/product/). Aktuell: ",
+    },
+    noData: {
+      en: "Could not extract any listing data",
+      zh: "未能提取到任何 Listing 数据",
+      ja: "商品データを抽出できませんでした",
+      de: "Keine Listendaten extrahierbar",
+    },
+    noDataHint: {
+      en: "Please make sure you are on an Amazon product detail page and the page has fully loaded. Try refreshing if the page uses async loading.",
+      zh: "请确认您正在查看的是亚马逊商品详情页，且页面已完全加载。如果页面使用了特殊的异步加载方式，请尝试刷新页面后再试。",
+      ja: "Amazonの商品詳細ページが完全に読み込まれていることを確認してください。非同期読み込みの場合はページを更新してください。",
+      de: "Bitte stellen Sie sicher, dass die Amazon-Produktseite vollständig geladen ist. Versuchen Sie die Seite zu aktualisieren.",
+    },
+    titleNotFound: {
+      en: "Could not find product title (#productTitle). Page structure may be unusual.",
+      zh: "未能找到商品标题（#productTitle），可能页面结构异常。",
+      ja: "商品タイトル（#productTitle）が見つかりません。ページ構造が特殊な可能性があります。",
+      de: "Produkttitel (#productTitle) nicht gefunden. Seitenstruktur möglicherweise ungewöhnlich.",
+    },
+    bulletsNotFound: {
+      en: "Could not find bullet points (#feature-bullets / #aboutThisItem). The product may have no bullet points or the page structure differs.",
+      zh: "未能找到五点描述（#feature-bullets / #aboutThisItem），可能该商品没有五点描述或页面结构不同。",
+      ja: "箇条書き（#feature-bullets / #aboutThisItem）が見つかりません。商品説明がないか、ページ構造が異なる可能性があります。",
+      de: "Bullet Points (#feature-bullets / #aboutThisItem) nicht gefunden. Produkt hat möglicherweise keine Bullet Points oder abweichende Seitenstruktur.",
+    },
+  };
+
+  function msg(key) {
+    return MSG[key]?.[pageLang] || MSG[key]?.en || key;
+  }
+
+  /**
    * 从当前亚马逊页面提取商品标题
    * @returns {{ text: string, found: boolean }}
    */
@@ -149,8 +209,8 @@
     if (!isProductPage()) {
       return {
         success: false,
-        error: "当前页面不是亚马逊商品详情页",
-        hint: "请在商品详情页（URL 包含 /dp/ 或 /gp/product/）打开此插件。当前页面: " + window.location.href,
+        error: msg("notProductPage"),
+        hint: msg("notProductPageHint") + window.location.href,
       };
     }
 
@@ -164,18 +224,18 @@
     if (!titleResult.found && !bulletsResult.found) {
       return {
         success: false,
-        error: "未能提取到任何 Listing 数据",
-        hint: "请确认您正在查看的是亚马逊商品详情页，且页面已完全加载。如果页面使用了特殊的异步加载方式，请尝试刷新页面后再试。",
+        error: msg("noData"),
+        hint: msg("noDataHint"),
       };
     }
 
     // ── 部分缺失情况（容忍模式） ──
     const warnings = [];
     if (!titleResult.found) {
-      warnings.push("未能找到商品标题（#productTitle），可能页面结构异常。");
+      warnings.push(msg("titleNotFound"));
     }
     if (!bulletsResult.found) {
-      warnings.push("未能找到五点描述（#feature-bullets / #aboutThisItem），可能该商品没有五点描述或页面结构不同。");
+      warnings.push(msg("bulletsNotFound"));
     }
 
     return {
