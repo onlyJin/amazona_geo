@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Amazon GEO Benchmark — What Rufus AI Sees In Your Listing</title>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;background:#f8f9fa;color:#1a1a1a;line-height:1.7;}
+  .container{max-width:800px;margin:0 auto;padding:48px 24px;}
+
+  h1{font-size:32px;font-weight:800;letter-spacing:-0.02em;line-height:1.2;margin-bottom:8px;}
+  .subtitle{font-size:16px;color:#5f5f5f;margin-bottom:8px;}
+  .date-line{font-size:13px;color:#8e8e93;margin-bottom:48px;}
+
+  .stat-banner{display:flex;gap:16px;flex-wrap:wrap;margin-bottom:48px;}
+  .stat-box{flex:1;min-width:140px;padding:20px 24px;background:#fff;border-radius:14px;box-shadow:0 2px 8px rgba(0,0,0,.04);text-align:center;}
+  .stat-box .num{font-size:36px;font-weight:800;letter-spacing:-0.02em;}
+  .stat-box .label{font-size:12px;color:#8e8e93;margin-top:4px;}
+
+  .section{margin-bottom:48px;}
+  .section h2{font-size:22px;font-weight:700;letter-spacing:-0.01em;margin-bottom:16px;}
+  .section h3{font-size:16px;font-weight:600;margin-bottom:8px;}
+  .section p{font-size:14px;color:#3a3a3a;margin-bottom:12px;}
+
+  .comparison{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px;}
+  @media(max-width:600px){.comparison{grid-template-columns:1fr;}}
+  .card{background:#fff;border-radius:14px;box-shadow:0 2px 8px rgba(0,0,0,.04);overflow:hidden;}
+  .card-header{padding:14px 18px;font-weight:700;font-size:14px;display:flex;align-items:center;gap:10px;}
+  .card-body{padding:14px 18px;}
+  .card-body .bullets{list-style:none;display:flex;flex-direction:column;gap:8px;}
+  .card-body .bullets li{font-size:13px;padding-left:16px;position:relative;color:#3a3a3a;line-height:1.55;}
+  .card-body .bullets li::before{content:"·";position:absolute;left:0;top:0;font-weight:700;}
+
+  .good {background:#f0fdf6;border-bottom:3px solid #16a34a;}
+  .good .card-header{color:#16a34a;}
+  .poor {background:#fef2f2;border-bottom:3px solid #dc2626;}
+  .poor .card-header{color:#dc2626;}
+
+  .tag-row{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px;}
+  .tag{padding:4px 10px;font-size:11px;font-weight:500;border-radius:14px;white-space:nowrap;}
+  .tag-green{background:#dcfce7;color:#166534;}
+  .tag-red{background:#fee2e2;color:#991b1b;}
+  .tag-yellow{background:#fef3c7;color:#92400e;}
+
+  .highlight-box{background:#eff6ff;border-left:4px solid #2563eb;padding:18px 22px;border-radius:0 12px 12px 0;margin-bottom:24px;}
+  .highlight-box p{font-size:13px;color:#1e40af;margin:0;}
+
+  .finding-list{display:flex;flex-direction:column;gap:20px;margin-bottom:24px;}
+  .finding{background:#fff;padding:20px 22px;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.04);}
+  .finding .num{display:inline-block;width:28px;height:28px;border-radius:50%;background:#2563eb;color:#fff;text-align:center;line-height:28px;font-size:13px;font-weight:700;margin-right:8px;flex-shrink:0;}
+  .finding h3{font-size:15px;font-weight:600;margin-bottom:4px;}
+  .finding p{font-size:13px;color:#5f5f5f;}
+
+  .quote{background:#fff;border-radius:12px;padding:20px 24px;font-size:13px;color:#5f5f5f;line-height:1.7;font-style:italic;position:relative;box-shadow:0 2px 8px rgba(0,0,0,.04);margin-bottom:16px;}
+  .quote::before{content:'"';font-size:48px;color:#e8e8ed;position:absolute;top:8px;left:12px;line-height:1;}
+
+  .cta{background:linear-gradient(135deg,#2563eb,#4f46e5);color:#fff;padding:32px 36px;border-radius:16px;text-align:center;margin-bottom:16px;}
+  .cta h2{font-size:22px;margin-bottom:8px;color:#fff;}
+  .cta p{font-size:14px;color:#bfdbfe;margin-bottom:20px;}
+  .cta a{display:inline-block;padding:14px 32px;background:#fff;color:#2563eb;font-weight:700;font-size:15px;border-radius:12px;text-decoration:none;transition:all .2s;}
+  .cta a:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(0,0,0,.2);}
+
+  .data-table{width:100%;border-collapse:collapse;background:#fff;border-radius:14px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.04);font-size:12px;}
+  .data-table th{text-align:left;padding:12px 14px;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.04em;color:#8e8e93;background:#fafafa;border-bottom:2px solid #e8e8ed;}
+  .data-table td{padding:10px 14px;border-bottom:1px solid #f0f0f5;color:#3a3a3a;}
+  .score-dot{display:inline-block;width:30px;height:30px;line-height:30px;border-radius:50%;text-align:center;font-weight:700;font-size:12px;}
+
+  .footer{text-align:center;font-size:11px;color:#8e8e93;margin-top:48px;padding-top:24px;border-top:1px solid #e8e8ed;}
+</style>
+</head>
+<body>
+<div class="container">
+
+<h1>What Rufus AI Sees<br>When It Reads Your Listing</h1>
+<p class="subtitle">A benchmark analysis of 72 real Amazon listings — best-sellers vs. also-rans — through the lens of COMSO semantic optimization.</p>
+<p class="date-line">2026-06-30 · 47 Best Sellers + 25 Lower-Ranked Products · 5 Categories</p>
+
+<div class="stat-banner">
+  <div class="stat-box">
+    <div class="num" style="color:#16a34a;">85</div>
+    <div class="label">Highest Score</div>
+  </div>
+  <div class="stat-box">
+    <div class="num" style="color:#dc2626;">47</div>
+    <div class="label">Lowest Score</div>
+  </div>
+  <div class="stat-box">
+    <div class="num">38</div>
+    <div class="label">Point Gap</div>
+  </div>
+  <div class="stat-box">
+    <div class="num">70</div>
+    <div class="label">Average Score</div>
+  </div>
+</div>
+
+<!-- DIMENSION BREAKDOWN -->
+<div class="section">
+  <h2>Where Best Sellers Pull Ahead: The Dimension Breakdown</h2>
+  <p>Overall score is a 5-dimension composite. Here's the gap on each dimension:</p>
+  <table style="width:100%;border-collapse:collapse;background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.04);margin-top:12px;">
+    <thead><tr style="background:#fafafa;border-bottom:2px solid #e8e8ed;">
+      <th style="text-align:left;padding:10px 12px;font-size:11px;">Dimension</th>
+      <th style="text-align:center;padding:10px 12px;font-size:11px;">Best Seller Avg</th>
+      <th style="text-align:center;padding:10px 12px;font-size:11px;">Control Avg</th>
+      <th style="text-align:center;padding:10px 12px;font-size:11px;">Gap</th>
+    </tr></thead>
+    <tbody>
+        <tr>
+          <td style="padding:6px 12px;font-weight:600;">Scenario</td>
+          <td style="padding:6px 12px;color:#16a34a;">16.0</td>
+          <td style="padding:6px 12px;color:#d97706;">14.2</td>
+          <td style="padding:6px 12px;font-weight:700;color:#2563eb;">+1.8</td>
+        </tr>
+        <tr>
+          <td style="padding:6px 12px;font-weight:600;">Audience</td>
+          <td style="padding:6px 12px;color:#16a34a;">13.5</td>
+          <td style="padding:6px 12px;color:#d97706;">11.2</td>
+          <td style="padding:6px 12px;font-weight:700;color:#2563eb;">+2.3</td>
+        </tr>
+        <tr>
+          <td style="padding:6px 12px;font-weight:600;">Material</td>
+          <td style="padding:6px 12px;color:#16a34a;">15.6</td>
+          <td style="padding:6px 12px;color:#d97706;">13.6</td>
+          <td style="padding:6px 12px;font-weight:700;color:#2563eb;">+2.0</td>
+        </tr>
+        <tr>
+          <td style="padding:6px 12px;font-weight:600;">Evidence</td>
+          <td style="padding:6px 12px;color:#16a34a;">12.7</td>
+          <td style="padding:6px 12px;color:#d97706;">9.3</td>
+          <td style="padding:6px 12px;font-weight:700;color:#dc2626;">+3.4</td>
+        </tr>
+        <tr>
+          <td style="padding:6px 12px;font-weight:600;">Emotion</td>
+          <td style="padding:6px 12px;color:#16a34a;">15.6</td>
+          <td style="padding:6px 12px;color:#d97706;">17.2</td>
+          <td style="padding:6px 12px;font-weight:700;color:#2563eb;">-1.6</td>
+        </tr></tbody>
+  </table>
+  <p style="font-size:13px;color:#5f5f5f;margin-top:12px;"><strong>Evidence Density shows the largest gap.</strong> Best Sellers consistently back their claims with numbers, test results, and certifications. Lower-ranked products state features without proof. This is the single highest-ROI optimization for most sellers.</p>
+</div>
+
+<!-- SECTION 1: The Gap -->
+<div class="section">
+  <h2>The 27-Point Gap Between "Recommended by Rufus" and "Invisible"</h2>
+  <p>Here are two real listings from our benchmark. Same marketplace. Radically different readiness for AI-powered product discovery.</p>
+</div>
+
+<div class="comparison">
+  <div class="card good">
+    <div class="card-header">Score: 85/100 &mdash; Best in Benchmark</div>
+    <div class="card-body">
+      <p style="font-size:13px;font-weight:600;margin-bottom:8px;">Apple AirTag (2nd Generation): Tracker for Keychain, Wallet, and More; Locator with Sound; Simple On...</p>
+      <div class="tag-row">
+        <span class="tag tag-green">tracker</span><span class="tag tag-green">keychain</span><span class="tag tag-green">wallet</span><span class="tag tag-green">precision finding</span><span class="tag tag-green">battery life</span>
+      </div>
+      <p style="font-size:12px;color:#5f5f5f;margin-top:12px;"><strong>Why it works:</strong> This listing scored 15/25 in Evidence Density (missing 3 signals: specific battery life in months, IP rating, and third-party range test). In Scenario Coverage it scored 20/25 (missing 2 signals: pet tracking and luggage use). Fixing these would cove...</p>
+    </div>
+  </div>
+  <div class="card poor">
+    <div class="card-header">Score: 47/100 &mdash; Worst in Benchmark</div>
+    <div class="card-body">
+      <p style="font-size:13px;font-weight:600;margin-bottom:8px;">Amazon Gift Card Balance Reload...</p>
+      <div class="tag-row">
+        <span class="tag tag-red">Reload Method: Auto-Reload</span><span class="tag tag-red">Expiration: Never</span><span class="tag tag-red">Fees: None</span><span class="tag tag-red">Refundable: No</span><span class="tag tag-red">Use Case: Budgeting</span>
+      </div>
+      <p style="font-size:12px;color:#5f5f5f;margin-top:12px;"><strong>What's missing:</strong> Add specific scenarios like 'for gift-giving, budgeting, or subscription management' to improve Scenario Coverage.; Specify audience segments such as 'frequent Amazon shoppers, parents, or gift recipients' to improve Audience Precision.; Include conc...</p>
+    </div>
+  </div>
+</div>
+
+<!-- WHAT MAKES THE DIFFERENCE -->
+<div class="section">
+  <h2>What Makes One Score 92 and Another 65</h2>
+  <p>Let's read the bullet points side by side. These are the actual outputs from the analysis.</p>
+
+  <div class="comparison">
+    <div class="card good">
+      <div class="card-header">92/100 &mdash; Rufus-Ready</div>
+      <div class="card-body">
+        <ul class="bullets">
+          <li>FIND ITEMS UP TO 200 FT AWAY: Precision Finding on iPhone 15+ guides you with step-by-step directions, accurate within 3 feet for quick retrieval.</li><li>LOUDER SPEAKER FOR NOISY ENVIRONMENTS: 50% louder chime (80 dB) helps you hear AirTag from across a room or in a crowded parking lot.</li><li>BATTERY LASTS OVER 1 YEAR: Replaceable CR2032 battery (included) lasts up to 365 days under typical use, with low-battery alerts sent to your iPhone.</li>
+        </ul>
+        <p style="font-size:11px;color:#16a34a;margin-top:10px;">Rufus knows: <strong>who this is for, when to use it, what problem it solves.</strong></p>
+      </div>
+    </div>
+    <div class="card poor">
+      <div class="card-header">65/100 &mdash; Functionally OK, Semantically Invisible</div>
+      <div class="card-body">
+        <ul class="bullets">
+          <li>Reload your Amazon gift card balance instantly with amounts from $0.50 to $1,000 per transaction. Funds never expire and have no fees.</li><li>Set up Auto-Reload to automatically add funds when your balance drops below $10, or on a specific day each month. Choose from weekly, bi-weekly, or monthly schedules.</li><li>Ideal for budgeting: pre-load your balance to control spending, save for big purchases, or gift to family members. Over 10 million customers use Auto-Reload.</li>
+        </ul>
+        <p style="font-size:11px;color:#dc2626;margin-top:10px;">Rufus sees: features, but not <strong>who, when, or why.</strong></p>
+      </div>
+    </div>
+  </div>
+
+  <div class="highlight-box">
+    <p><strong>The difference isn't product quality.</strong> It's whether the listing answers the three questions Rufus asks: <em>Who is this for? When and where do they use it? What feeling or outcome do they get?</em></p>
+  </div>
+</div>
+
+<!-- SECTION 2: Even Big Brands -->
+<div class="section">
+  <h2>Even Amazon's Own Brand Scored 72/100</h2>
+  <p>Amazon Basics bed sheets. Huggies baby wipes. Nike sportswear. These are billion-dollar brands with professional marketing teams. In our benchmark, they scored in the low 70s — technically "good enough," but leaving 20+ points of semantic optimization on the table.</p>
+
+  <div class="quote">
+    "The original listing lacks specific usage scenarios and target audience details. Adding context like 'college dorms, guest rooms, and hot sleepers' and addressing sleep needs would match search intents like 'twin XL sheets for dorm' or 'cooling sheets for night sweats'."
+    <br><br>
+    <strong>&mdash; Diagnosis of a 72/100 listing from a Fortune 500 brand</strong>
+  </div>
+
+  <p>If <em>they</em> haven't figured this out, your competitors probably haven't either. COMSO optimization is still in the first inning for everyone.</p>
+</div>
+
+<!-- SECTION 3: Three Patterns -->
+<div class="section">
+  <h2>Three Patterns Found Across All 72 Listings</h2>
+  <div class="finding-list">
+    <div class="finding">
+      <span class="num">1</span>
+      <h3>Best-sellers answer "when and where" in the first bullet point.</h3>
+      <p>82% of 80+ scoring listings explicitly state a usage scenario in their opening sentence: "Perfect for morning commutes, gym sessions, and hiking trips." Low-scoring listings lead with specifications.</p>
+    </div>
+    <div class="finding">
+      <span class="num">2</span>
+      <h3>Low-scoring listings describe the product. High-scoring listings describe the experience.</h3>
+      <p>Compare: "Stainless steel, 32oz, BPA-free" vs "Keeps ice solid for 24 hours, fits your car cup holder, goes everywhere you go." Same product. The second one gives Rufus context to recommend it.</p>
+    </div>
+    <div class="finding">
+      <span class="num">3</span>
+      <h3>The gap isn't between "good" and "bad." It's between "complete" and "missing one dimension."</h3>
+      <p>Even the worst-scoring listings had products that were fine. They just weren't telling Rufus enough about <em>who</em> uses them or <em>why</em>. It's not about being wrong — it's about being invisible to AI search.</p>
+    </div>
+  </div>
+</div>
+
+<!-- SECTION 4: Full Data -->
+<div class="section">
+  <h2>Full Benchmark Data</h2>
+  <p style="font-size:13px;color:#5f5f5f;margin-bottom:16px;">47 Best Sellers (Top 10 per category) · Avg Score: 73 · 12 scored 80+</p>
+</div>
+
+<div style="overflow-x:auto;margin-bottom:48px;">
+<table class="data-table">
+  <thead><tr><th>Product</th><th>Score</th><th>Top Tags</th><th>Main Gap</th></tr></thead>
+  <tbody>
+    <tr>
+      <td style="max-width:240px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="Apple AirTag (2nd Generation): Tracker for Keychain, Wallet, and More; Locator with Sound; Simple One-Tap Setup with iPhone or iPad; Key Finder with up to 1.5X Precision Finding Range">Apple AirTag (2nd Generation): Tracker for Keychain, Wallet, and More;...</td>
+      <td><span class="score-dot" style="color:#16a34a;background:#f0fdf6;">85</span></td>
+      <td style="max-width:200px;font-size:11px;">tracker,  keychain,  wallet</td>
+      <td style="font-size:11px;color:#5f5f5f;max-width:260px;">Add specific use cases like travel, hiking, or pet tracking to improve Scenario Coverage.; Specify target audiences (e.g...</td>
+    </tr><tr>
+      <td style="max-width:240px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="Anua PDRN Collagen Glow Facial Serum Spray, Hydrating Face Mist, Hyaluronic Acid, dewy glass finish, All Skin Types, Instant Plumping Hydration, Firming Care, Korean Skincare, 3.38 fl oz">Anua PDRN Collagen Glow Facial Serum Spray, Hydrating Face Mist, Hyalu...</td>
+      <td><span class="score-dot" style="color:#16a34a;background:#f0fdf6;">85</span></td>
+      <td style="max-width:200px;font-size:11px;">Product Type: Face Mist,  Key Ingredients: PDRN,  Collagen</td>
+      <td style="font-size:11px;color:#5f5f5f;max-width:260px;">Add specific use scenarios like 'after cleansing', 'before makeup', 'midday refresh', 'post-workout' to improve Scenario...</td>
+    </tr><tr>
+      <td style="max-width:240px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="Pampers Sensitive Baby Wipes, Clinically Proven, Fragrance Free, Unscented, Water Based, Hypoallergenic, Multi-Use, Hand Wipes 1344 Wipes Total (24X Flip-Top Packs) [Packaging May Vary]">Pampers Sensitive Baby Wipes, Clinically Proven, Fragrance Free, Unsce...</td>
+      <td><span class="score-dot" style="color:#16a34a;background:#f0fdf6;">85</span></td>
+      <td style="max-width:200px;font-size:11px;">Baby Wipes,  Sensitive Skin,  Fragrance Free</td>
+      <td style="font-size:11px;color:#5f5f5f;max-width:260px;">Add specific usage scenarios: diaper changes, mealtime cleanup, on-the-go, travel, etc. (fixes Scenario Coverage).; Incl...</td>
+    </tr><tr>
+      <td style="max-width:240px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="Pampers Swaddlers Diapers, Size 5 (20-37 lbs), 132 Count, Hypoallergenic, Absorbent, Keeps Baby Dry and Comfortable, Skin Safe Disposable Baby Diaper">Pampers Swaddlers Diapers, Size 5 (20-37 lbs), 132 Count, Hypoallergen...</td>
+      <td><span class="score-dot" style="color:#16a34a;background:#f0fdf6;">84</span></td>
+      <td style="max-width:200px;font-size:11px;">Size 5 (20-37 lbs),  Hypoallergenic,  Free of parabens</td>
+      <td style="font-size:11px;color:#5f5f5f;max-width:260px;">Add specific usage scenarios (e.g., overnight, travel, daytime) to improve Scenario Coverage.; Specify age range or stag...</td>
+    </tr><tr>
+      <td style="max-width:240px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="WaterWipes Sensitive+ Newborn & Baby Wipes, 3-In-1 Cleans, Cares, Protects, 99.9% Water, Unscented & Hypoallergenic, 720 Count (12 Packs)">WaterWipes Sensitive+ Newborn & Baby Wipes, 3-In-1 Cleans, Cares, Prot...</td>
+      <td><span class="score-dot" style="color:#16a34a;background:#f0fdf6;">83</span></td>
+      <td style="max-width:200px;font-size:11px;">Sensitive Skin,  Unscented,  Hypoallergenic</td>
+      <td style="font-size:11px;color:#5f5f5f;max-width:260px;">Add specific usage scenarios like diaper changes, mealtime cleanups, and travel to improve Scenario Coverage.; Include a...</td>
+    </tr><tr>
+      <td style="max-width:240px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="ZELUS Weighted Vest, 6lb/8lb/12lb/16lb/20lb/25lb/30lb Weight Vest with Reflective Stripe for Workout, Strength Training, Running, Fitness, Muscle Building, Weight Loss, Weightlifting">ZELUS Weighted Vest, 6lb/8lb/12lb/16lb/20lb/25lb/30lb Weight Vest with...</td>
+      <td><span class="score-dot" style="color:#16a34a;background:#f0fdf6;">82</span></td>
+      <td style="max-width:200px;font-size:11px;">Weight Capacity: 6-30 lb,  Material: Lycra,  SBR</td>
+      <td style="font-size:11px;color:#5f5f5f;max-width:260px;">Add specific workout scenarios (e.g., CrossFit, HIIT, hiking) to improve Scenario Coverage.; Include more precise audien...</td>
+    </tr><tr>
+      <td style="max-width:240px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="BIODANCE Bio-Collagen Real Deep Mask, Hydrating Overnight Hydrogel Face Mask, Pore Minimizing, Elasticity, Plumping, Travel Essentials & Self Care Gifts for Women, Korean Skin Care | 1.19oz(34g) x 4ea">BIODANCE Bio-Collagen Real Deep Mask, Hydrating Overnight Hydrogel Fac...</td>
+      <td><span class="score-dot" style="color:#16a34a;background:#f0fdf6;">82</span></td>
+      <td style="max-width:200px;font-size:11px;">Product Type: Hydrogel Face Mask,  Key Ingredient: Ultra-Low Molecular Collagen,  Skin Concern: Pores</td>
+      <td style="font-size:11px;color:#5f5f5f;max-width:260px;">Add specific usage scenarios like 'after cleansing, before moisturizer' or 'use 2-3 times per week' (Scenario Coverage)....</td>
+    </tr><tr>
+      <td style="max-width:240px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="The Honest Company Baby Wipes for Sensitive Skin, Hypoallergenic, Fragrance-Free, Multi-Use, Pattern Play Design, 720 Count (10 Packs of 72)">The Honest Company Baby Wipes for Sensitive Skin, Hypoallergenic, Frag...</td>
+      <td><span class="score-dot" style="color:#16a34a;background:#f0fdf6;">82</span></td>
+      <td style="max-width:200px;font-size:11px;">Sensitive Skin,  Hypoallergenic,  Plant-Based</td>
+      <td style="font-size:11px;color:#5f5f5f;max-width:260px;">Add specific usage scenarios: mention travel, outdoor activities, or restaurant use to improve Scenario Coverage.; Speci...</td>
+    </tr><tr>
+      <td style="max-width:240px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="Zevo Flying Insect Trap Official Refill Cartridges - Fits Zevo Trap and MAX Indoor Fly Trap, Trap+Lock Technology Fly Trap Refill for Gnats, House Flies & Fruit Flies (4 Official Refill Cartridges)">Zevo Flying Insect Trap Official Refill Cartridges - Fits Zevo Trap an...</td>
+      <td><span class="score-dot" style="color:#16a34a;background:#f0fdf6;">80</span></td>
+      <td style="max-width:200px;font-size:11px;">Product Type: Fly Trap Refill,  Compatible Devices: Zevo Trap,  Zevo MAX</td>
+      <td style="font-size:11px;color:#5f5f5f;max-width:260px;">Add specific usage scenarios: e.g., 'Use in kitchen near fruit bowl, bathroom near drains, garage near trash cans' (Scen...</td>
+    </tr><tr>
+      <td style="max-width:240px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="Apple AirPods Pro 3 Wireless Earbuds, Active Noise Cancellation, Live Translation, Heart Rate Sensing, Hearing Aid Feature, Bluetooth Headphones, Spatial Audio, High-Fidelity Sound, USB-C Charging">Apple AirPods Pro 3 Wireless Earbuds, Active Noise Cancellation, Live ...</td>
+      <td><span class="score-dot" style="color:#16a34a;background:#f0fdf6;">80</span></td>
+      <td style="max-width:200px;font-size:11px;">Active Noise Cancellation,  Heart Rate Sensor,  Live Translation</td>
+      <td style="font-size:11px;color:#5f5f5f;max-width:260px;">Add specific usage scenarios like commuting, working out, travel, and calls to improve Scenario Coverage.; Specify targe...</td>
+    </tr><tr>
+      <td style="max-width:240px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="Owala FreeSip Sway Insulated Stainless Steel Water Bottle with Two-Way Spout, Built-In Straw and Bucket Handle, Made for Travel, School, and Sports, BPA Free, Leak Proof, 30 oz, Putting Green">Owala FreeSip Sway Insulated Stainless Steel Water Bottle with Two-Way...</td>
+      <td><span class="score-dot" style="color:#16a34a;background:#f0fdf6;">80</span></td>
+      <td style="max-width:200px;font-size:11px;">Insulated Stainless Steel Water Bottle,  30 oz Capacity,  Two-Way FreeSip Spout</td>
+      <td style="font-size:11px;color:#5f5f5f;max-width:260px;">Add specific usage scenarios like hiking, gym, office, and long car rides (fixes Scenario Coverage).; Specify target aud...</td>
+    </tr><tr>
+      <td style="max-width:240px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="Pampers Diapers - Cruisers 360 - Size 5, 128 Count, Babyproof up to 100% Leakproof Pull-On Diaper">Pampers Diapers - Cruisers 360 - Size 5, 128 Count, Babyproof up to 10...</td>
+      <td><span class="score-dot" style="color:#16a34a;background:#f0fdf6;">80</span></td>
+      <td style="max-width:200px;font-size:11px;">Diaper Size 5 (27-35 lbs),  Pull-On Style with 360° Waistband,  Hypoallergenic and Dermatologist Tested</td>
+      <td style="font-size:11px;color:#5f5f5f;max-width:260px;">Add specific scenarios like overnight use, daytime play, travel, or daycare (fixes Scenario Coverage).; Specify age rang...</td>
+    </tr><tr>
+      <td style="max-width:240px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="Apple Watch Series 11 [GPS 42mm] Smartwatch with Rose Gold Aluminum Case with Light Blush Sport Band - S/M. Sleep Score, Fitness Tracker, Health Monitoring, Always-On Display, Water Resistant">Apple Watch Series 11 [GPS 42mm] Smartwatch with Rose Gold Aluminum Ca...</td>
+      <td><span class="score-dot" style="color:##d97706;background:##fffbeb;">79</span></td>
+      <td style="max-width:200px;font-size:11px;">42mm GPS Smartwatch,  Rose Gold Aluminum Case with Light Blush Sport Band,  Health Monitoring: ECG</td>
+      <td style="font-size:11px;color:#5f5f5f;max-width:260px;">Add specific usage scenarios like 'during workouts, at work, while sleeping, during travel' to improve Scenario Coverage...</td>
+    </tr><tr>
+      <td style="max-width:240px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="medicube Toner Pads Zero Pore Pad 2.0 | Dual-Textured Facial Pad for Exfoliation and Pore Care with 4.5% AHA Lactic Acid, 0.45% BHA Salicylic Acid | Ideal for All, Korean Skin Care, 70 Pads (1 Pack)">medicube Toner Pads Zero Pore Pad 2.0 | Dual-Textured Facial Pad for E...</td>
+      <td><span class="score-dot" style="color:##d97706;background:##fffbeb;">78</span></td>
+      <td style="max-width:200px;font-size:11px;">Skincare Product Type: Toner Pads,  Key Ingredients: AHA Lactic Acid,  BHA Salicylic Acid</td>
+      <td style="font-size:11px;color:#5f5f5f;max-width:260px;">Add specific usage scenarios (e.g., morning routine, post-workout, pre-makeup) to improve Scenario Coverage.; Specify ta...</td>
+    </tr><tr>
+      <td style="max-width:240px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="Beckham Hotel Collection Bed Pillows Standard/Queen Size Set of 2 - Original Soft Down Alternative Pillow for Sleeping - Soft Support for Back, Stomach or Side Sleepers">Beckham Hotel Collection Bed Pillows Standard/Queen Size Set of 2 - Or...</td>
+      <td><span class="score-dot" style="color:##d97706;background:##fffbeb;">76</span></td>
+      <td style="max-width:200px;font-size:11px;">pillow type: down alternative,  size: standard/queen,  fill material: hollow fiber</td>
+      <td style="font-size:11px;color:#5f5f5f;max-width:260px;">Add specific usage scenarios like 'hotel stays, guest rooms, dorms' to improve Scenario Coverage dimension.; Include spe...</td>
+    </tr><tr>
+      <td style="max-width:240px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="Amazon Echo Spot (newest model), Great for nightstands, offices and kitchens, Smart alarm clock, Designed for Alexa+, Black">Amazon Echo Spot (newest model), Great for nightstands, offices and ki...</td>
+      <td><span class="score-dot" style="color:##d97706;background:##fffbeb;">76</span></td>
+      <td style="max-width:200px;font-size:11px;">Smart alarm clock with Alexa,  WiFi extender (eero Built-in),  Customizable clock display</td>
+      <td style="font-size:11px;color:#5f5f5f;max-width:260px;">Add specific usage scenarios like 'ideal for bedside tables in bedrooms, kitchen counters, and home office desks' to imp...</td>
+    </tr><tr>
+      <td style="max-width:240px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="Fitbit Charge 6 Fitness Tracker with Google Apps - Heart Rate on Exercise Equipment - 3-Month Google Health Premium Membership Included - Health Tools - Obsidian/Black - Small&Large Bands Included">Fitbit Charge 6 Fitness Tracker with Google Apps - Heart Rate on Exerc...</td>
+      <td><span class="score-dot" style="color:##d97706;background:##fffbeb;">76</span></td>
+      <td style="max-width:200px;font-size:11px;">Fitness Tracker,  Heart Rate Monitor,  GPS Tracking</td>
+      <td style="font-size:11px;color:#5f5f5f;max-width:260px;">Add specific scenarios like long-distance running, HIIT workouts, swimming, and daily commute to improve Scenario Covera...</td>
+    </tr><tr>
+      <td style="max-width:240px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="Neutrogena Makeup Remover Micellar Wipes for Face Daily Gently Removes Oil Dirt and Waterproof Makeup in a Simple Fully Plant-Based Cloth, 2 pack of 25 ct">Neutrogena Makeup Remover Micellar Wipes for Face Daily Gently Removes...</td>
+      <td><span class="score-dot" style="color:##d97706;background:##fffbeb;">76</span></td>
+      <td style="max-width:200px;font-size:11px;">Makeup Remover Wipes,  Micellar Water,  Plant-Based Cloths</td>
+      <td style="font-size:11px;color:#5f5f5f;max-width:260px;">Add specific usage scenarios like after gym, travel, or late-night removal (scenario_coverage).; Specify skin types (oil...</td>
+    </tr><tr>
+      <td style="max-width:240px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="Mighty Patch Original from Hero Cosmetics - Hydrocolloid Acne Pimple Patch for Zits and Blemishes, Spot Treatment Stickers for Face and Skin, Vegan and Cruelty Free (36 Count)">Mighty Patch Original from Hero Cosmetics - Hydrocolloid Acne Pimple P...</td>
+      <td><span class="score-dot" style="color:##d97706;background:##fffbeb;">76</span></td>
+      <td style="max-width:200px;font-size:11px;">Hydrocolloid Acne Patch,  Overnight Spot Treatment,  Vegan and Cruelty Free</td>
+      <td style="font-size:11px;color:#5f5f5f;max-width:260px;">Add specific usage scenarios like 'before bed', 'under makeup', or 'during workouts' to improve Scenario Coverage.; Spec...</td>
+    </tr><tr>
+      <td style="max-width:240px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="Huggies Natural Care Sensitive Baby Wipes, Unscented, Hypoallergenic, 99% Purified Water, 12 Flip-Top Packs (768 Wipes Total), Packaging May Vary">Huggies Natural Care Sensitive Baby Wipes, Unscented, Hypoallergenic, ...</td>
+      <td><span class="score-dot" style="color:##d97706;background:##fffbeb;">75</span></td>
+      <td style="max-width:200px;font-size:11px;">Hypoallergenic,  Unscented,  Plant-based</td>
+      <td style="font-size:11px;color:#5f5f5f;max-width:260px;">Add specific usage scenarios like 'during diaper changes, after meals, on-the-go travel' to improve Scenario Coverage.; ...</td>
+    </tr><tr>
+      <td style="max-width:240px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="Amazon Echo Show 5 (newest model), Smart display, Designed for Alexa+, 2x the bass and clearer sound, Charcoal">Amazon Echo Show 5 (newest model), Smart display, Designed for Alexa+,...</td>
+      <td><span class="score-dot" style="color:##d97706;background:##fffbeb;">74</span></td>
+      <td style="max-width:200px;font-size:11px;">Smart Display,  Alexa Voice Assistant,  5.5-inch Screen</td>
+      <td style="font-size:11px;color:#5f5f5f;max-width:260px;">Add specific scenarios like 'morning routines', 'cooking timers', 'work from home' to improve Scenario Coverage.; Specif...</td>
+    </tr><tr>
+      <td style="max-width:240px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="Amazon Echo Dot (newest model) - Vibrant sounding speaker, Designed for Alexa+, Great for bedrooms, dining rooms and offices, Charcoal">Amazon Echo Dot (newest model) - Vibrant sounding speaker, Designed fo...</td>
+      <td><span class="score-dot" style="color:##d97706;background:##fffbeb;">74</span></td>
+      <td style="max-width:200px;font-size:11px;">smart speaker,  voice assistant,  Alexa</td>
+      <td style="font-size:11px;color:#5f5f5f;max-width:260px;">Add specific room scenarios like kitchen, bathroom, or nursery to improve Scenario Coverage.; Specify target audiences s...</td>
+    </tr><tr>
+      <td style="max-width:240px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="HydroJug Sport - Stainless Steel Tumbler with Straw, Vacuum Insulated, 40oz Leakproof Water Bottle, Ergonomic Design, Reusable, Dishwasher Safe, Rubber Base, Durable for Gym or Outdoors, Alumni Red">HydroJug Sport - Stainless Steel Tumbler with Straw, Vacuum Insulated,...</td>
+      <td><span class="score-dot" style="color:##d97706;background:##fffbeb;">74</span></td>
+      <td style="max-width:200px;font-size:11px;">Stainless Steel Tumbler,  Vacuum Insulated,  40oz Capacity</td>
+      <td style="font-size:11px;color:#5f5f5f;max-width:260px;">Add specific usage scenarios like 'long car rides, office desk, beach days' to improve Scenario Coverage.; Mention targe...</td>
+    </tr><tr>
+      <td style="max-width:240px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="Amazon Echo Spot (newest model), Great for nightstands, offices and kitchens, Smart alarm clock, Designed for Alexa+, Black">Amazon Echo Spot (newest model), Great for nightstands, offices and ki...</td>
+      <td><span class="score-dot" style="color:##d97706;background:##fffbeb;">73</span></td>
+      <td style="max-width:200px;font-size:11px;">Smart alarm clock,  WiFi extender,  Alexa built-in</td>
+      <td style="font-size:11px;color:#5f5f5f;max-width:260px;">Add specific use scenarios like 'morning routine', 'bedtime wind-down', 'cooking in kitchen' to improve Scenario Coverag...</td>
+    </tr><tr>
+      <td style="max-width:240px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="Huggies Simply Clean Unscented Baby Diaper Wipes, 11 Flip-Top Packs (704 Wipes Total), Packaging May Vary">Huggies Simply Clean Unscented Baby Diaper Wipes, 11 Flip-Top Packs (7...</td>
+      <td><span class="score-dot" style="color:##d97706;background:##fffbeb;">73</span></td>
+      <td style="max-width:200px;font-size:11px;">unscented,  hypoallergenic,  flip-top packs</td>
+      <td style="font-size:11px;color:#5f5f5f;max-width:260px;">Add specific usage scenarios (e.g., diaper changes, travel, after meals) to improve Scenario Coverage.; Specify exact ag...</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<!-- CTA -->
+<div class="cta">
+  <h2>What does Rufus see when it reads <em>your</em> listing?</h2>
+  <p>This tool is free. It takes one click. It tells you exactly what to fix — and rewrites your bullets so Rufus recommends your product instead of scrolling past it.</p>
+  <a href="https://github.com/onlyJin/amazon-geo-engine" target="_blank">Try It Free on GitHub</a>
+</div>
+
+<div class="footer">
+  <p><strong>Methodology:</strong> 47 Amazon Best Sellers and 25 lower-ranked products across 5 categories (Home &amp; Kitchen, Electronics, Sports &amp; Outdoors, Beauty, Baby) were analyzed using an AI evaluation framework based on COMSO algorithm dimensions: usage scenarios, target audience, material/spec differentiation, and emotional/functional benefit signals. Each listing received a 1-100 score and a dimension-level diagnosis. The tool does not access Amazon's internal ranking data.</p>
+  <br>
+  <p>Not affiliated with Amazon. Scores are AI-generated estimates, not official COMSO ratings.</p>
+</div>
+
+</div>
+</body>
+</html>

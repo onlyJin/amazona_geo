@@ -1,0 +1,27 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+backend/.env
+backend/venv/
+
+# Data collection CSVs
+collected_*.csv
+
+# Generated report CSVs & HTML (keep only benchmark_report.html)
+promo/report_*.csv
+promo/report_*.html
+
+# OS & IDE
+.DS_Store
+.vscode/
+*.log
+
+# Backend (not part of public repo)
+backend/
+
+# GEO PDF directory
+GEO_PDF/
+
+# Scripts
+scripts/

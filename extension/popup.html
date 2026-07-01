@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Amazon GEO Engine</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="container">
+
+    <!-- ═══ Header ═══ -->
+    <div class="header">
+      <div class="header-icon">📊</div>
+      <div class="header-text">
+        <h1>Amazon GEO Engine</h1>
+        <span id="headerSubtitle">COSMO Algo · Alexa & Rufus Optimizer</span>
+      </div>
+      <span id="usageBadge" class="usage-badge">Free: 5/5 this month</span>
+      <button id="langSwitch" class="lang-switch" title="Switch Language / 切换语言">🌐</button>
+    </div>
+
+    <!-- ═══ Privacy Notice ═══ -->
+    <div class="privacy-bar">
+      <span class="privacy-icon">🔒</span>
+      <span id="privacyText">Only reads public listing text. No account data collected, stored, or uploaded.</span>
+    </div>
+
+    <!-- ═══ Cached Result Indicator ═══ -->
+    <div id="cacheBar" class="cache-bar">
+      <span>📦</span>
+      <span id="cacheText"></span>
+      <button id="clearCacheBtn" class="cache-clear-btn">✕</button>
+    </div>
+
+    <!-- ═══ Action Button ═══ -->
+    <button id="analyzeBtn" class="btn-primary">
+      <span class="btn-icon">🚀</span>
+      <span id="analyzeBtnText">Analyze Listing</span>
+    </button>
+
+    <!-- ═══ Loading ═══ -->
+    <div id="loading" class="loading-area">
+      <div class="spinner"></div>
+      <span id="loadingText" class="loading-text">AI is analyzing your listing<span class="loading-dots"></span></span>
+    </div>
+
+    <!-- ═══ Error Message ═══ -->
+    <div id="errorMsg" class="error-msg">
+      <span class="error-icon">⚠️</span>
+      <span id="errorText"></span>
+      <button id="retryBtn" class="retry-btn">Retry</button>
+    </div>
+
+    <!-- ═══ Results Panel ═══ -->
+    <div id="results" class="results">
+
+      <!-- Score Card -->
+      <div id="scoreCard" class="score-card">
+        <div class="score-ring">
+          <svg width="64" height="64" viewBox="0 0 64 64">
+            <circle class="score-ring-bg" cx="32" cy="32" r="28"
+                    fill="none" stroke-width="5" />
+            <circle id="scoreCircle" cx="32" cy="32" r="28"
+                    fill="none" stroke-width="5"
+                    stroke-linecap="round"
+                    stroke-dasharray="175.93"
+                    stroke-dashoffset="175.93" />
+          </svg>
+          <span id="scoreValue" class="score-value">--</span>
+        </div>
+        <div>
+          <div id="scoreTitle" class="score-title">GEO Score</div>
+          <div id="scoreSubtitle" class="score-subtitle">COSMO Readiness</div>
+        </div>
+      </div>
+
+      <!-- Dimension Scores -->
+      <div class="section-card" id="dimCard">
+        <div id="dimLabel" class="section-label">📊 Dimension Breakdown (5 × 25pts)</div>
+        <div id="dimBars" class="dim-bars"></div>
+      </div>
+
+      <!-- Actionable Checklist -->
+      <div class="section-card">
+        <div id="checklistLabel" class="section-label">✅ Actionable Checklist</div>
+        <ul id="checklistContainer" class="checklist"></ul>
+      </div>
+
+      <!-- Optimization Reason -->
+      <div class="section-card reason-card">
+        <div id="reasonLabel" class="section-label">💡 Why It Works</div>
+        <p id="reasonText"></p>
+      </div>
+
+      <!-- Attributes -->
+      <div class="section-card">
+        <div id="tagsLabel" class="section-label">🏷️ Core Attributes</div>
+        <div id="tagsContainer" class="tags"></div>
+      </div>
+
+      <!-- Rewritten Bullets -->
+      <div class="rewrite-card">
+        <div class="rewrite-header">
+          <span id="rewriteLabel" class="section-label" style="margin-bottom:0;">✍️ Optimized Bullets</span>
+          <button id="copyBtn" class="copy-btn">📋 <span id="copyBtnText">Copy</span></button>
+        </div>
+        <ol id="rewriteBullets" class="rewrite-bullets"></ol>
+      </div>
+
+      <!-- Item Highlights (July 27, 2026 Amazon rule) -->
+      <div class="section-card" id="highlightsCard">
+        <div id="highlightsLabel" class="section-label">🏷️ Item Highlights (Jul 27 Rule · 125 chars)</div>
+        <p id="highlightsText" class="highlights-text"></p>
+        <button id="copyHighlightsBtn" class="copy-btn" style="margin-top:6px;">📋 <span id="copyHighlightsBtnText">Copy Highlights</span></button>
+      </div>
+
+      <!-- FAQ -->
+      <div class="section-card" id="faqCard">
+        <div id="faqLabel" class="section-label">❓ Alexa Voice Search FAQ</div>
+        <div id="faqContainer" class="faq-list"></div>
+      </div>
+
+      <!-- Seller Central -->
+      <button id="sellerCentralBtn" class="btn-seller-central">
+        ⚙️ <span id="sellerCentralBtnText">Edit in Seller Central</span>
+      </button>
+
+    </div>
+
+    <!-- ═══ History Panel ═══ -->
+    <div id="historyPanel" class="history-panel">
+      <div class="history-header">
+        <span id="historyLabel" class="section-label">📜 History</span>
+        <button id="clearHistoryBtn" class="history-clear-btn">Clear</button>
+      </div>
+      <div id="historyList" class="history-list"></div>
+    </div>
+
+    <!-- ═══ Footer ═══ -->
+    <div class="footer">
+      <span>Amazon GEO Engine v1.0 · Powered by DeepSeek</span>
+      <button id="exportCsvBtn" class="export-csv-btn" title="Export collected data as CSV">📥 Export CSV</button>
+    </div>
+
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>
